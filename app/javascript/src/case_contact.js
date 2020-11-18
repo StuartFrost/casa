@@ -104,4 +104,12 @@ window.onload = function () {
 }
 $('document').ready(() => {
   $('[data-toggle="tooltip"]').tooltip()
+
+  let selectedCase = $('#select-case-number option')[0].value
+  const url = window.location.pathname
+
+  $('#select-case-number').change(function() {
+    selectedCase = this.value
+    $.post(url, { selected_case_number: selectedCase })
+  });
 })
