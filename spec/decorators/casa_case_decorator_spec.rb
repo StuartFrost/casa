@@ -44,6 +44,64 @@ RSpec.describe CasaCaseDecorator do
     end
   end
 
+  describe "#court_report_select_option" do
+    subject { casa_case.decorate.court_report_select_option }
+
+    let(:casa_case) {
+      build(:casa_case, case_number: "Foo", transition_aged_youth: transition,
+                        birth_month_year_youth: birthdate, assigned_volunteers: volunteers)
+    }
+    let(:transition) { false }
+    let(:birthdate) { 8.years.ago }
+    let(:volunteers) { [] }
+
+    context "when the case has not transitioned" do
+      it "builds the select label stating non-transition" do
+        expect(subject[0]).to eq "Foo - non-transition(assigned to no one)"
+      end
+    end
+
+    context "when the case has transitioned" do
+      let(:transition) { true }
+
+      it "builds the select label stating transition" do
+        expect(subject[0]).to eq "Foo - transition(assigned to no one)"
+      end
+
+      it "builds the data attributes with transitioned set to true" do
+        expect(subject[2]).to eq("data-transitioned": true, "data-lookup": "")
+      end
+    end
+
+    context "when the case is of transition age" do
+      let(:birthdate) { 15.years.ago }
+
+      it "builds the select label stating transition" do
+        expect(subject[0]).to eq "Foo - transition(assigned to no one)"
+      end
+    end
+
+    context "when there are assigned volunteers" do
+      let(:volunteers) { [Volunteer.new(display_name: "Jane Doe")] }
+
+      it "builds the select label with assignee names" do
+        expect(subject[0]).to eq "Foo - non-transition(assigned to Jane Doe)"
+      end
+
+      it "builds data-lookup with volunteer names" do
+        expect(subject[2]).to eq("data-transitioned": false, "data-lookup": "Jane Doe")
+      end
+    end
+
+    it "builds the select value" do
+      expect(subject[1]).to eq "Foo"
+    end
+
+    it "builds the data attributes" do
+      expect(subject[2]).to eq("data-transitioned": false, "data-lookup": "")
+    end
+  end
+
   describe "#formatted_updated_at" do
     subject { casa_case.decorate.formatted_updated_at }
     let(:updated_at_time) { Time.parse("Wed Dec 9 12:51:20 2020") }
